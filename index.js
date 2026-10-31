@@ -8,6 +8,16 @@ const indexPath = path.join(__dirname, "index.html");
 
 let site = "";
 
+// Функция экранирования HTML-спецсимволов для защиты от XSS
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 async function loadSite() {
   site = await fs.readFile(indexPath, "utf8");
 }
@@ -17,7 +27,10 @@ app.get("/", async (req, res) => {
   const name =
     typeof rawName === "string" && rawName.trim() ? rawName.trim() : "Guest";
 
-  const greet = site.replace(/%%_USER_NAME%%/g, name);
+  // Экранируем перед вставкой в HTML
+  const safeName = escapeHtml(name);
+  const greet = site.replace(/%%_USER_NAME%%/g, safeName);
+
   res.send(greet);
 });
 
